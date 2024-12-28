@@ -8,6 +8,7 @@ class Student:
         self.finished_courses = []
         self.courses_in_progress = []
         self.grades = {}
+        self.average_rating = float()
 
     def rate_lecturer(self, lecturer, course, grade):
         if isinstance(lecturer, Lecturer) and course in lecturer.courses_attached and course in self.courses_in_progress:
@@ -18,18 +19,40 @@ class Student:
         else:
             return 'Ошибка'
 
-    def average_student_grade(self):
+    def __str__(self):
         sum_grades = 0
         n_gr = 0
         for grade in self.grades.values():
             sum_grades += sum(list(grade))
             n_gr += len(grade)
+        self.average_rating = round((sum_grades / n_gr), 1)
+        output = f'Имя: {self.name}\n' \
+              f'Фамилия: {self.surname}\n' \
+              f'Средняя оценка за домашние задания: {self.average_rating}\n' \
+              f'Курсы в процессе изучения: {", ".join(self.courses_in_progress)}\n' \
+              f'Завершенные курсы: {", ".join(self.finished_courses)}\n'
+        return output
 
-        av_grade = round((sum_grades / n_gr), 1)
-        return av_grade
+    def __lt__(self, other):
+        """Сравнение студентов между собой по средней оценке за домашние задания через оператор '<'"""
+        if not isinstance(other, Student):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating < other.average_rating
 
-    def __str__(self):
-        return f"Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за домашние задания: {self.average_student_grade()} \nКурсы в процессе изучения: {', '.join(self.courses_in_progress)} \nЗавершенные курсы: {', '.join(self.finished_courses)} \n"
+    def __gt__(self, other):
+        """Сравнение студентов между собой по средней оценке за домашние задания через оператор '<'"""
+        if not isinstance(other, Student):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating > other.average_rating
+
+    def __eq__(self, other):
+        """Сравнение студентов между собой по средней оценке за домашние задания через оператор '<'"""
+        if not isinstance(other, Student):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating == other.average_rating
 
 
 class Mentor:
@@ -44,42 +67,35 @@ class Lecturer(Mentor):
         super().__init__(name, surname)
         self.grades = {}
         self.lecturers_list = []
+        self.average_rating = float()
 
-    def average_lecturer_grade(self):
-        sum_grades = 0
-        n_gr = 0
-        for grade in self.grades.values():
-            sum_grades += sum(list(grade))
-            n_gr += len(grade)
+    def __eq__(self, lect):
+        if not isinstance(lect, Lecturer):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating == lect.average_rating
 
-        av_grade = round((sum_grades / n_gr), 1)
-        return av_grade
+    def __lt__(self, lect):
+        if not isinstance(lect, Lecturer):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating < lect.average_rating
 
-    def av_lect_grade_by_course(self, lecturers_list, course_title):
-        sum_grades = 0
-        n_gr = 0
-        for lector in lecturers_list:
-            if lector.grades == course_title:
-                for grade in lector.grades.values():
-                    sum_grades += sum(list(grade))
-                    n_gr += len(grade)
-            else:
-                pass
-
-        av_lect_grade_by_course = round((sum_grades / n_gr), 1)
-        return av_lect_grade_by_course
-
-    def __eq__(self, lecturer):
-        return self.average_lecturer_grade() == lecturer.average_lecturer_grade()
-
-    def __lt__(self, lecturer):
-        return self.average_lecturer_grade() < lecturer.average_lecturer_grade()
-
-    def __gt__(self, lecturer):
-        return self.average_lecturer_grade() > lecturer.average_lecturer_grade()
+    def __gt__(self, lect):
+        if not isinstance(lect, Lecturer):
+            print('Сравнение некорректно')
+            return
+        return self.average_rating > lect.average_rating
 
     def __str__(self):
-        return f"Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за лекции: {self.average_lecturer_grade()} \n"
+        grades_count = 0
+        for grade in self.grades:
+            grades_count += len(self.grades[grade])
+        self.average_rating = round(sum(map(sum, self.grades.values())) / grades_count, 1)
+        output = f'Имя: {self.name}\n' \
+                 f'Фамилия: {self.surname}\n' \
+                 f'Средняя оценка за лекции: {self.average_rating}\n'
+        return output
 
 
 class Reviewer(Mentor):
@@ -110,9 +126,6 @@ some_student2 = Student('Alexey', 'Petrov', 'man')
 some_student2.courses_in_progress += ['Python']
 some_student2.finished_courses += ['Java']
 
-#list of students
-student_list = [some_student1, some_student2]
-
 #Reviewer1
 some_reviewer1= Reviewer('Some', 'Buddy')
 some_reviewer1.courses_attached += ['Python', 'Java', 'C++', 'Csharp', 'Git']
@@ -129,9 +142,6 @@ some_lecturer1.courses_attached += ['Python', 'Java', 'C++', 'Csharp', 'Git']
 some_lecturer2 = Lecturer("Ivan", "Ivanov")
 some_lecturer2.courses_attached += ['Python', 'Java', 'Git']
 
-#List of lecturers
-lecturers = [some_lecturer1, some_lecturer2]
-average_course_grade = Lecturer.av_lect_grade_by_course(lecturers, )
 
 #Actions with student1
 some_student1.rate_lecturer(some_lecturer1, 'Python', 8)
@@ -165,10 +175,6 @@ print(f"Grades of student \t |{some_student2.name} {some_student2.surname}|\t fo
 print(f"Grades of lecturer \t |{some_lecturer1.name} {some_lecturer1.surname}|\t\t for conducted_courses:\t{some_lecturer1.grades}")
 print(f"Grades of lecturer \t |{some_lecturer2.name} {some_lecturer2.surname}|\t\t for conducted_courses:\t{some_lecturer2.grades}")
 
-#print average grades by courses
-
-
-
 #print data
 for elem in (some_student1, some_student2):
     print(f"\nStudent\n{elem}")
@@ -180,6 +186,60 @@ for elem in (some_reviewer1, some_reviewer2):
     print(f"\nReviewer\n{elem}")
 
 #Comparison of average lecturers' grades
-print(f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached} одинакова остальным? \n{some_lecturer1.__eq__(some_lecturer2)}\n")
-print(f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached} выше? \n{some_lecturer1.__gt__(some_lecturer2)}\n")
-print(f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached} ниже? \n{some_lecturer1.__lt__(some_lecturer2)}\n")
+lect_comparison1 = f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached}\n" \
+                   f"одинакова средней оценке лектора '{some_lecturer2.name} {some_lecturer2.surname}'? \n{some_lecturer1.__eq__(some_lecturer2)}\n"
+lect_comparison2 = f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached}\n" \
+                   f"выше средней оценки лектора '{some_lecturer2.name} {some_lecturer2.surname}'? \n{some_lecturer1.__gt__(some_lecturer2)}\n"
+lect_comparison3 = f"Средняя оценка лектора '{some_lecturer1.name} {some_lecturer1.surname}' по проводимым курсам {some_lecturer1.courses_attached}\n" \
+                   f"ниже средней оценки лектора '{some_lecturer2.name} {some_lecturer2.surname}'? \n{some_lecturer1.__lt__(some_lecturer2)}\n"
+
+print(lect_comparison1)
+print(lect_comparison2)
+print(lect_comparison3)
+
+#Comparison of average students' grades
+stud_comparison1 = f"Средняя оценка студента '{some_student1.name} {some_student1.surname}' выше средней оценки студента '{some_student2.name} {some_student2.surname}'?\n{some_student1.__gt__(some_student2)}"
+stud_comparison2 = f"Средняя оценка студента '{some_student1.name} {some_student1.surname}' эквивалентна средней оценке студента '{some_student2.name} {some_student2.surname}'?\n{some_student1.__eq__(some_student2)}"
+stud_comparison3 = f"Средняя оценка студента '{some_student1.name} {some_student1.surname}' выше средней оценки студента '{some_student2.name} {some_student2.surname}'?\n{some_student1.__lt__(some_student2)}"
+
+print(stud_comparison1)
+print(stud_comparison2)
+print(stud_comparison3)
+
+# Создаем список студентов
+student_list = [some_student1, some_student2]
+
+# Создаем список лекторов
+lecturer_list = [some_lecturer1, some_lecturer2]
+
+def average_student_rating(student_list, course_title):
+    """Функция для подсчета средней оценки за домашние задания по всем студентам в рамках конкретного курса
+    в качестве аргументов принимает список студентов и название курса"""
+
+    sum_all = 0
+    count_all = 0
+    for stud in student_list:
+       if stud.courses_in_progress == [course_title]:
+            sum_all += stud.average_rating
+            count_all += 1
+    average_for_all_courses = round(sum_all / count_all, 1)
+    return average_for_all_courses
+
+
+def average_lecturer_rating(lecturer_list, course_title):
+    """Функция для подсчета средней оценки за лекции всех лекторов в рамках курса
+     в качестве аргумента принимает список лекторов и название курса"""
+
+    sum_all = 0
+    count_all = 0
+    for lect in lecturer_list:
+        if lect.courses_attached == [course_title]:
+            sum_all += lect.average_rating
+            count_all += 1
+    average_for_all_courses = round(sum_all / count_all, 1)
+    return average_for_all_courses
+
+
+# Выводим результат подсчета средней оценки по всем студентам для данного курса
+print(f"\nСредняя оценка для всех студентов по курсу {'Python'}: {average_student_rating(student_list, 'Python')}")
+print()
