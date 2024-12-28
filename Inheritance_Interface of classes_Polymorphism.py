@@ -98,15 +98,6 @@ class Reviewer(Mentor):
     def __str__(self):
         return f"Имя: {self.name} \nФамилия: {self.surname}  \n"
 
-# class Course:
-#     def __init__(self):
-#
-#         self.course_title = course_title
-#
-#
-# python_course = Course('Python')
-# git_course = Course('Git')
-
 
 #Define people and courses according to roles
 #Student1
